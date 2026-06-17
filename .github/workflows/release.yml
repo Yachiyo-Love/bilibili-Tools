@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -33,6 +35,15 @@ jobs:
           if (-not $exe) { throw "No release executable found." }
           Copy-Item $exe.FullName dist/
           Compress-Archive -Path dist/* -DestinationPath "bilibili-tools-windows.zip" -Force
+
+      - name: Update latest-main tag
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f latest-main
+          git push origin refs/tags/latest-main --force
 
       - name: Create Main Release
         if: github.ref == 'refs/heads/main'
